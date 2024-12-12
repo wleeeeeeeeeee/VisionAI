@@ -5,8 +5,11 @@
 /// utils -> data transformation , augementation, feature visualization, output saving, etc.
 /// 
 
-
+template <class Model>
 class Detector {
+private:
+	Model model;
+
 public :
 	Detector();
 	virtual void Initialize();
@@ -14,6 +17,4 @@ public :
 	virtual void LoadWeight();
 	virtual void LoadPretrained();
 	virtual void Predict();
-
-
 };

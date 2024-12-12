@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="src\Inference_Engine\Task\Detection.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -39,14 +33,14 @@
     <ClInclude Include="src\Log\log.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="VisionAPI.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Inference_Engine\Task\Segmentation.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="src\Inference_Engine\Task\Detection.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -63,6 +57,12 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\Log\log.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VisionAPI.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Inference_Engine\Task\Segmentation.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
