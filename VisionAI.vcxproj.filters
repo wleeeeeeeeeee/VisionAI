@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Inference_Engine\Task\Detection.h">
+    <ClInclude Include="src\Inference_Engine\ITask\IDetection.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\BaseInferencer\baseInferencer.h">
+    <ClInclude Include="src\Inference_Engine\IInferenceEngine\IInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Inferencer\onnxInferencer.h">
+    <ClInclude Include="src\Inference_Engine\Frameworks\OnnxInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Inferencer\torchInferencer.h">
+    <ClInclude Include="src\Inference_Engine\Frameworks\TorchInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Inferencer\trtInferencer.h">
+    <ClInclude Include="src\Inference_Engine\Frameworks\TensorRTInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\Log\log.h">
@@ -36,24 +36,30 @@
     <ClInclude Include="VisionAPI.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Task\Segmentation.h">
+    <ClInclude Include="src\Inference_Engine\ITask\ISegmentation.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Inference_Engine\ITask\IClassification.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Inference_Engine\ITask\ITask.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Inference_Engine\Task\Detection.cpp">
+    <ClCompile Include="src\Inference_Engine\ITask\IDetection.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\BaseInferencer\baseInferencer.cpp">
+    <ClCompile Include="src\Inference_Engine\IInferenceEngine\IInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Inferencer\onnxInferencer.cpp">
+    <ClCompile Include="src\Inference_Engine\Frameworks\OnnxInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Inferencer\torchInferencer.cpp">
+    <ClCompile Include="src\Inference_Engine\Frameworks\TorchInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Inferencer\trtInferencer.cpp">
+    <ClCompile Include="src\Inference_Engine\Frameworks\TensorRTInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\Log\log.cpp">
@@ -62,7 +68,13 @@
     <ClCompile Include="VisionAPI.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Task\Segmentation.cpp">
+    <ClCompile Include="src\Inference_Engine\ITask\ISegmentation.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Inference_Engine\ITask\IClassification.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Inference_Engine\ITask\ITask.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
