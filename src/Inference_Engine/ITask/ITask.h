@@ -1,6 +1,9 @@
 #pragma once
+
 #include <vector>
-/// include opencv
+#include <opencv2/opencv.hpp>
+#include <torch/torch.h>
+
 /// include torch
 /// utils -> data transformation , augementation, feature visualization, output saving, etc.
 /// 

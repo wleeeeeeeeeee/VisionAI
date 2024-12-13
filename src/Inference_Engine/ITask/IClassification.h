@@ -1,4 +1,3 @@
-#pragma once
 #include "ITask.h"
 
 class IClassification : public ITask {
