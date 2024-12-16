@@ -1,4 +1,5 @@
 #pragma once
+#include <onnxruntime_cxx_api.h>
 
 template <typename TaskType>
 class IInferenceEngine {
