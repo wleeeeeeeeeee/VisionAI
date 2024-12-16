@@ -4,15 +4,15 @@
 template <typename TaskType>
 class OnnxInferenceEngine : public IInferenceEngine<TaskType> {
 private:
-	// torch::jit::scipt::Module model;
-	// ort::session session;
-	// nvrt::nvinfer engine;
+	Ort::Env env{};
+	Ort::AllocatorWithDefaultOptions allocator{};
+	Ort::RunOptions runOptions{};
+	Ort::Session session = Ort::Session(nullptr);
 public:
 	void loadModel(const std::string& modelPath) override {
-
-		//model = torch::jit::load(modelPath);
-		//session = 
-		// engine = 
+		//load model into session
+		//configure gpu, cpu, any necessary inference options
+		//get onnx info (node names, input shape, output shape etc)
 	}
 
 	void infer(const typename TaskType::InputType& input, typename TaskType::OutputType& output) override {
