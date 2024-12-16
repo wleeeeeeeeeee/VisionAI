@@ -8,6 +8,7 @@
 *.vcxproj
 *.vcxproj.filters
 third_party/
+test/
 
 # User-specific files
 *.rsuser
