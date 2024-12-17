@@ -8,6 +8,9 @@ private:
 public :
     using InputType = std::vector<float>;	// Flattened image data
     using OutputType = std::vector<std::vector<float>>;	// [x, y, width, height, confidence]
+    static void preProcess() {
+
+    }
     static void processOutput(const torch::Tensor& tensor, OutputType& output) {
         output.clear();
         for (int i = 0; i < tensor.size(0); ++i) {
