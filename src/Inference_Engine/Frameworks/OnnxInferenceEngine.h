@@ -10,10 +10,10 @@ private:
 	Ort::Session session = Ort::Session(nullptr);
 	size_t input_nums{};
 	size_t output_nums{};
-	vector<const char*> input_node_names;
-	vector<const char*> output_node_names;
+	std::vector<const char*> input_node_names;
+	std::vector<const char*> output_node_names;
 
-	void get_model(std::string& model_path, std::string& device, int threads = 0, int gpu_mem_limit = 4) {
+	void get_model(const std::string& model_path, std::string& device, int threads = 0, int gpu_mem_limit = 4) {
 		try {
 			auto availableProviders = Ort::GetAvailableProviders();
 			for (const auto& provider : availableProviders) {
@@ -41,6 +41,7 @@ private:
 		}
 		catch (std::exception ex) {
 			// somekind of exception error printed on log
+			std::cout << "inside onnxInferenceengine, get_model() function was called, but {0} error occured " << ex.what() << std::endl;
 		}
 	}
 
@@ -49,9 +50,14 @@ private:
 	}
 
 public:
+	OnnxInferenceEngine() = default;
+	OnnxInferenceEngine(const std::string& modelPath) {
+		loadModel(modelPath);
+	}
 	void loadModel(const std::string& modelPath) override {
 		//load model into session + configure gpu, cpu, any necessary inference options
-		get_model(modelPath, "cuda");
+		std::string device = "cuda";
+		get_model(modelPath, device);
 		
 		//get onnx info (node names, input shape, output shape etc)
 		get_onnx_info();
@@ -63,16 +69,17 @@ public:
 			//prepare input tensor
 			TaskType::preProcess();
 			//run inference
-			output_tensors = session.Run(
+			/*output_tensors = session.Run(
 				this->runOptions,
 				this->input_node_names.data(),
 				&input_tensor,
 				this->input_nums,
 				this->output_node_names.data(),
 				this->output_nums
-			);
+			);*/
 			//task-specific postprocessing
-			TaskType::processOuput(rawOutput, output);
+			//TaskType::processOutput(input, output);
+			//TaskType::processOuput(rawOutput, output);
 		}
 		catch (std::exception& ex) {
 			// somekind of exception error printed on log
