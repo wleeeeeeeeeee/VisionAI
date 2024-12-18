@@ -1,5 +1,7 @@
 #pragma once
 #include "../IInferenceEngine/IInferenceEngine.h"
+#include <cuda_runtime_api.h>
+#include <cpu_provider_factory.h>
 
 template <typename TaskType>
 class OnnxInferenceEngine : public IInferenceEngine<TaskType> {
@@ -12,8 +14,28 @@ private:
 	size_t output_nums{};
 	std::vector<const char*> input_node_names;
 	std::vector<const char*> output_node_names;
+	
+	void checkCudaDevices() {
+		int device_count = 0;
+		cudaError_t err = cudaGetDeviceCount(&device_count);
+		if (err != cudaSuccess) {
+			std::cout << "CUDA error: " << cudaGetErrorString(err) << std::endl;
+			return;
+		}
 
-	void get_model(const std::string& model_path, std::string& device, int threads = 0, int gpu_mem_limit = 4) {
+		std::cout << "Number of CUDA devices: " << device_count << std::endl;
+		for (int i = 0; i < device_count; ++i) {
+			cudaDeviceProp device_prop;
+			err = cudaGetDeviceProperties(&device_prop, i);
+			if (err != cudaSuccess) {
+				std::cout << "CUDA error: " << cudaGetErrorString(err) << std::endl;
+				continue;
+			}
+			std::cout << "Device " << i << ": " << device_prop.name << std::endl;
+		}
+	}
+
+	void get_model(const std::string& model_path, std::string& device, int threads = 4, int gpu_mem_limit = 4) {
 		try {
 			auto availableProviders = Ort::GetAvailableProviders();
 			for (const auto& provider : availableProviders) {
@@ -21,18 +43,26 @@ private:
 			}
 			std::cout << std::endl;
 
+			checkCudaDevices();
+
+			
+
 			Ort::SessionOptions sessionOptions;
 			sessionOptions.SetIntraOpNumThreads(threads);
 			sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 
 			//cuda
-			OrtCUDAProviderOptions cuda_options;
-			cuda_options.device_id = 0;
-			cuda_options.arena_extend_strategy = 0;
-			cuda_options.gpu_mem_limit = (size_t)gpu_mem_limit * 1024 * 1024 * 1024; // gpu memory limit
-			cuda_options.cudnn_conv_algo_search = OrtCudnnConvAlgoSearch::OrtCudnnConvAlgoSearchExhaustive;
-			cuda_options.do_copy_in_default_stream = 1;
-			sessionOptions.AppendExecutionProvider_CUDA(cuda_options);
+			//OrtCUDAProviderOptions cuda_options;
+			//cuda_options.device_id = 0;
+			//cuda_options.arena_extend_strategy = 0;
+			//cuda_options.gpu_mem_limit = (size_t)gpu_mem_limit * 1024 * 1024 * 1024; // gpu memory limit
+			//cuda_options.cudnn_conv_algo_search = OrtCudnnConvAlgoSearch::OrtCudnnConvAlgoSearchExhaustive;
+			//cuda_options.do_copy_in_default_stream = 1;
+			//sessionOptions.AppendExecutionProvider_CUDA(cuda_options);
+			
+			OrtSessionOptionsAppendExecutionProvider_CUDA(sessionOptions, 0);
+			//OrtSessionOptionsAppendExecutionProvider_CPU(sessionOptions, 1);
+			//sessionOptions.AppendExecutionProvider(1);
 
 			wchar_t* model_path1 = new wchar_t[model_path.size()];
 			swprintf(model_path1, 4096, L"%S", model_path.c_str());
