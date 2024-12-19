@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <onnxruntime_cxx_api.h>
+#include <opencv2/opencv.hpp>
 
 template <typename TaskType>
 class IInferenceEngine {
