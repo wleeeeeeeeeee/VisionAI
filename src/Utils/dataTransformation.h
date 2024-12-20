@@ -70,4 +70,26 @@ public:
 			std::cout << "Error occured in tensor2vec : " << ex.what() << std::endl;
 		}
 	}
+
+	// Converts std::vector<float> to at::Tensor
+	static void vec2tensor(const std::vector<float>& vec, const std::vector<int64_t>& shape, at::Tensor& tensor) {
+		try {
+			tensor = torch::from_blob(const_cast<float*>(vec.data()), shape, torch::kFloat).clone();
+		}
+		catch (const std::exception& ex) {
+			std::cout << "Error occured in vec2tensor : " << ex.what() << std::endl;
+		}
+	}
+
+	// Converts std::vector<float> to cv::Mat
+	static void vec2mat(const std::vector<float>& vec, int rows, int cols, int channels, cv::Mat& mat) {
+		try {
+			mat = cv::Mat(rows, cols, CV_32FC(channels), const_cast<float*>(vec.data())).clone();
+			mat.convertTo(mat, CV_8U, 255.0); // Convert to 8-bit
+		}
+		catch (const std::exception& ex) {
+			std::cout << "Error occured in vec2mat : " << ex.what() << std::endl;
+		}
+	}
+
 };
