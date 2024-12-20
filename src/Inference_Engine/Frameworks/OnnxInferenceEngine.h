@@ -2,6 +2,7 @@
 #include "../IInferenceEngine/IInferenceEngine.h"
 #include <cuda_runtime_api.h>
 #include <cpu_provider_factory.h>
+#include "../../Utils/dataTransformation.h"
 
 template <typename TaskType>
 class OnnxInferenceEngine : public IInferenceEngine<TaskType> {
@@ -13,7 +14,12 @@ private:
 	size_t input_nums{};
 	size_t output_nums{};
 	std::vector<const char*> input_node_names;
+	std::vector<Ort::AllocatedStringPtr> input_node_names_ptr;
 	std::vector<const char*> output_node_names;
+	std::vector<Ort::AllocatedStringPtr> output_node_names_ptr;
+	std::vector<std::vector<int64_t>> input_dims;
+	std::vector<std::vector<int64_t>> output_dims;
+
 	
 	void checkCudaDevices() {
 		int device_count = 0;
@@ -76,6 +82,47 @@ private:
 	}
 
 	void get_onnx_info() {
+		this->input_nums = this->session.GetInputCount();
+		this->output_nums = this->session.GetOutputCount();
+
+		for (int i = 0; i < this->input_nums; i++) {
+			Ort::AllocatedStringPtr input_name = this->session.GetInputNameAllocated(i, this->allocator);
+			this->input_node_names.push_back(input_name.get());
+			this->input_node_names_ptr.push_back(std::move(input_name));
+
+			auto input_shape_info = this->session.GetInputTypeInfo(i).GetTensorTypeAndShapeInfo();
+			this->input_dims.push_back(input_shape_info.GetShape());
+		}
+		for (int i = 0; i < this->output_nums; i++) {
+			Ort::AllocatedStringPtr output_name = this->session.GetOutputNameAllocated(i, this->allocator);
+			this->output_node_names.push_back(output_name.get());
+			this->output_node_names_ptr.push_back(std::move(output_name));
+
+			auto output_shape_info = this->session.GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo();
+			this->output_dims.push_back(output_shape_info.GetShape());
+		}
+
+		//printing input shape
+		bool has_negative = false;
+		for (int i = 0; i < this->input_nums; ++i) {
+			std::cout << "input_dims: ";
+			for (auto& j : this->input_dims[i]) {
+				if (j < 0) has_negative = true; // dynamic batch(if the batch size is -1)
+				std::cout << j << " ";
+			}
+			std::cout << std::endl;
+		}
+
+		//printing outputput shape
+		for (int i = 0; i < this->output_nums; ++i) {
+			std::cout << "output_dims: ";
+			for (const auto j : this->output_dims[i]) {
+				std::cout << j << " ";
+				if (j < 0) has_negative = true;
+			}
+			std::cout << std::endl;
+		}
+
 
 	}
 
@@ -97,22 +144,53 @@ public:
 	void infer(const typename TaskType::InputType& input, typename TaskType::OutputType& output) override {
 		try {
 			//prepare input tensor
-			TaskType::preProcess();
+			cv::Mat input_tensor;
+			TaskType::preProcess(input, input_tensor);
+
+			//converting to ort::value 
+			cv::Mat blob = cv::dnn::blobFromImage(input_tensor);
+
+			auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+			Ort::Value ort_input_tensor = Ort::Value::CreateTensor<float>(memory_info, blob.ptr<float>(), blob.total(), input_dims[0].data(), input_dims[0].size());
+			
+			std::vector<Ort::Value> output_tensors;
+
 			//run inference
-			/*output_tensors = session.Run(
+			output_tensors = this->session.Run(
 				this->runOptions,
 				this->input_node_names.data(),
-				&input_tensor,
+				&ort_input_tensor,
 				this->input_nums,
 				this->output_node_names.data(),
 				this->output_nums
-			);*/
-			//task-specific postprocessing
-			//TaskType::processOutput(input, output);
-			//TaskType::processOuput(rawOutput, output);
+			);
+			
+			float* output_data = output_tensors[0].GetTensorMutableData<float>();
+			std::vector<float> output_vec(output_data, output_data + output_tensors[0].GetTensorTypeAndShapeInfo().GetElementCount());
+
+			at::Tensor output_tensor;
+			dataTransformer::vec2tensor(output_vec, output_dims[0], output_tensor);
+
+			// Assuming 'tensor' is your tensor object
+			std::vector<int64_t> tensor_shape = output_tensor.sizes().vec();
+
+			// Print the shape
+			std::cout << "Tensor shape: [";
+			for (size_t i = 0; i < tensor_shape.size(); ++i) {
+				std::cout << tensor_shape[i];
+				if (i < tensor_shape.size() - 1) {
+					std::cout << ", ";
+				}
+			}
+			std::cout << "]" << std::endl;
+
+
+			TaskType::postProcess(output_tensor, output);
+
 		}
 		catch (std::exception& ex) {
 			// somekind of exception error printed on log
+			std::cout << ex.what() << std::endl;
 		}
 	}
 };
