@@ -71,7 +71,7 @@ public :
             torch::Tensor class_scores = tensor.index({ 0,torch::indexing::Slice(5) });  // shape : [80.8400]
 
 
-            auto mask = (objectness_scores > confThreshold);
+            auto mask = (objectness_scores > confThreshold); //marking 0:false 1:true [80]
             auto indices = torch::nonzero(mask).squeeze(1);
             torch::Tensor valid_objectness = objectness_scores.index({ indices });
             torch::Tensor valid_class_scores = class_scores.index({ torch::indexing::Ellipsis , indices });
@@ -82,8 +82,7 @@ public :
             torch::Tensor class_confidences = std::get<0>(class_probs);
             torch::Tensor predicted_classes = std::get<1>(class_probs);
 
-            std::cout << valid_bboxes.size(0) << std::endl;
-            std::cout << valid_bboxes.size(1) << std::endl;
+            valid_bboxes = valid_bboxes.t();
             
             // Apply NMS to reduce redundant boxes
             double iou_threshold = 0.5;
@@ -96,7 +95,7 @@ public :
                 int64_t idx = kept_indices[i].item<int64_t>(); // Get index for each kept box
 
                 // Extract the bounding box coordinates (x, y, w, h)
-                auto bbox = valid_bboxes.index({ torch::indexing::Ellipsis, idx }).t(); // [x, y, w, h]
+                auto bbox = valid_bboxes.index({ idx , torch::indexing::Ellipsis, }); // [x, y, w, h]
                 std::vector<float> bbox_vec = { bbox[0].item<float>(), bbox[1].item<float>(), bbox[2].item<float>(), bbox[3].item<float>() };
 
                 // Assuming predicted_classes is a tensor with class IDs
