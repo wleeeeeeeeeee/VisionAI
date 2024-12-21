@@ -7,10 +7,6 @@ private:
 public:
     // Function to calculate IoU
     static torch::Tensor calculate_iou(const torch::Tensor& boxes1, const torch::Tensor& boxes2) {
-        std::cout << boxes1.size(0) << std::endl;
-        std::cout << boxes1.size(1) << std::endl;
-        std::cout << boxes2.size(0) << std::endl;
-        std::cout << boxes2.size(1) << std::endl;
         auto x1 = torch::max(boxes1.index({ torch::indexing::Slice(), 0 }), boxes2.index({ torch::indexing::Slice(), 0 }));
         auto y1 = torch::max(boxes1.index({ torch::indexing::Slice(), 1 }), boxes2.index({ torch::indexing::Slice(), 1 }));
         auto x2 = torch::min(boxes1.index({ torch::indexing::Slice(), 2 }), boxes2.index({ torch::indexing::Slice(), 2 }));
@@ -33,9 +29,6 @@ public:
         auto selected_boxes = boxes.index({ sorted_indices });
         auto selected_scores = scores.index({ sorted_indices });
 
-        std::cout << boxes.size(0) << std::endl;
-        std::cout << boxes.size(1) << std::endl;
-
         while (sorted_indices.size(0) > 0) {
             // Select the top score index
             auto current_index = sorted_indices[0].item<int64_t>();
@@ -43,9 +36,6 @@ public:
 
             if (sorted_indices.size(0) == 1) break;
 
-
-            std::cout << boxes.size(0) << std::endl;
-            std::cout << boxes.size(1) << std::endl;
             // Compare the top box with the rest
             auto current_box = boxes[current_index].unsqueeze(0);
             auto remaining_boxes = boxes.index({ sorted_indices.slice(0, 1) });
