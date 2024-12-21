@@ -64,29 +64,27 @@ public :
 
             // Access dimensions (assumes YOLO's output format)
             auto numBoxes = rawOutput.size(2);
-            int num_classes = rawOutput.size(1) - 5; 
 
-            //x,y,w,h, conf
-            torch::Tensor objectness_scores = tensor.index({ 0,4 });                     // shape : [8400]
-            torch::Tensor class_scores = tensor.index({ 0,torch::indexing::Slice(5) });  // shape : [80.8400]
+            // Extract bounding boxes and class scores
+            auto bboxes = tensor.index({ 0, torch::indexing::Slice(0, 4), torch::indexing::Ellipsis }); // Shape: [4, 8400]
+            auto class_scores = tensor.index({0, torch::indexing::Slice(4, torch::indexing::None), torch::indexing::Ellipsis }); // Shape: [80, 8400]
 
+            // Compute maximum class score and class indices for each box
+            auto max_scores = std::get<0>(class_scores.max(1)); // Shape: [8400]
+            auto class_indices = std::get<1>(class_scores.max(1)); // Shape: [8400]
 
-            auto mask = (objectness_scores > confThreshold); //marking 0:false 1:true [80]
-            auto indices = torch::nonzero(mask).squeeze(1);
-            torch::Tensor valid_objectness = objectness_scores.index({ indices });
-            torch::Tensor valid_class_scores = class_scores.index({ torch::indexing::Ellipsis , indices });
-            torch::Tensor valid_bboxes = tensor.index({ 0,torch::indexing::Slice(0,4), indices });
+            // Apply confidence threshold
+            auto mask = (max_scores > confThreshold).any(0); // Shape: [8400]
 
-            torch::Tensor adjusted_scores = valid_class_scores * valid_objectness;
-            auto class_probs = adjusted_scores.max(0);
-            torch::Tensor class_confidences = std::get<0>(class_probs);
-            torch::Tensor predicted_classes = std::get<1>(class_probs);
+            bboxes = bboxes.index({ torch::indexing::Ellipsis, mask }); // Filtered bboxes
+            max_scores = max_scores.index({ mask }); // Filtered scores
+            class_indices = class_indices.index({ mask }); // Filtered classes
 
-            valid_bboxes = valid_bboxes.t();
+            bboxes = bboxes.t();
             
             // Apply NMS to reduce redundant boxes
-            double iou_threshold = 0.5;
-            auto kept_indices = visionOps::nms(valid_bboxes, class_confidences, iou_threshold);
+            //double iou_threshold = 0.5;
+            auto kept_indices = visionOps::nms(bboxes, max_scores, nmsThreshold);
 
             // Filter output to keep only NMS results
             OutputType filteredOutput;
@@ -95,12 +93,12 @@ public :
                 int64_t idx = kept_indices[i].item<int64_t>(); // Get index for each kept box
 
                 // Extract the bounding box coordinates (x, y, w, h)
-                auto bbox = valid_bboxes.index({ idx , torch::indexing::Ellipsis, }); // [x, y, w, h]
+                auto bbox = bboxes.index({ idx , torch::indexing::Ellipsis, }); // [x, y, w, h]
                 std::vector<float> bbox_vec = { bbox[0].item<float>(), bbox[1].item<float>(), bbox[2].item<float>(), bbox[3].item<float>() };
 
                 // Assuming predicted_classes is a tensor with class IDs
-                float class_id = predicted_classes[idx].item<float>(); // Get the class ID
-                float confidence = class_confidences[idx].item<float>(); // Get the confidence score
+                float class_id = class_indices[idx].item<float>(); // Get the class ID
+                float confidence = max_scores[idx].item<float>(); // Get the confidence score
 
                 bbox_vec.push_back(class_id);
                 bbox_vec.push_back(confidence);

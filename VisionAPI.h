@@ -7,7 +7,7 @@
 #define VISIONAI_DECLSPEC __declspec(dllimport)
 #endif
 
-extern "C" VISIONAI_DECLSPEC void Init();
+//extern "C" VISIONAI_DECLSPEC void Init();
 
 /**
 *
