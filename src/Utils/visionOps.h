@@ -22,8 +22,18 @@ public:
     }
     // NMS function
     static torch::Tensor nms(const torch::Tensor& boxes, const torch::Tensor& scores, double iou_threshold) {
+        std::cout << boxes.size(0) << std::endl;
+        std::cout << boxes.size(1) << std::endl;
+        std::cout << scores.size(0) << std::endl;
+
+
         // Sort scores in descending order
         auto sorted_indices = std::get<1>(scores.sort(0, /*descending=*/true));
+
+        for (int64_t i = 0; i < sorted_indices.size(0); ++i) {
+            std::cout << sorted_indices[i].item<int64_t>() << " ";
+        }
+        std::cout << std::endl;
 
         std::vector<int64_t> keep_indices;
         auto selected_boxes = boxes.index({ sorted_indices });
@@ -38,13 +48,20 @@ public:
 
             // Compare the top box with the rest
             auto current_box = boxes[current_index].unsqueeze(0);
-            auto remaining_boxes = boxes.index({ sorted_indices.slice(0, 1) });
+            //auto remaining_boxes = boxes.index({ sorted_indices.slice(0, 1) });
+            auto remaining_boxes = boxes.index({ sorted_indices.slice(0, sorted_indices.size(0)).slice(0, 1, sorted_indices.size(0)) });
             auto iou = calculate_iou(current_box, remaining_boxes);
 
             // Filter out boxes with IoU above the threshold
             auto mask = iou <= iou_threshold;
             auto indices = torch::nonzero(mask).squeeze(1);
             sorted_indices = sorted_indices.index({indices});
+
+            for (int64_t i = 0; i < sorted_indices.size(0); ++i) {
+                std::cout << sorted_indices[i].item<int64_t>() << " ";
+            }
+            std::cout << std::endl;
+
         }
 
         return torch::tensor(keep_indices, torch::dtype(torch::kInt64));
