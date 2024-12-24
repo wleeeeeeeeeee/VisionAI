@@ -38,25 +38,16 @@ public:
         for (int i = 0; i < bboxes.size(); i++) {
             // Get bounding box coordinates
             auto box = bboxes[i]; // Shape: [4]
-            //float x_min = box[0] * scale_x;
-            //float y_min = box[1] * scale_y;
-            //float x_max = box[2] * scale_x;
-            //float y_max = box[3] * scale_y;
 
-
-            float center_x = box[0] * scale_x;
-            float center_y = box[1] * scale_y;
+            float x = box[0] * scale_x;
+            float y = box[1] * scale_y;
             float width = box[2] * scale_x;
             float height = box[3] * scale_y;
 
-            float x_min = center_x - width / 2.0;
-            float y_min = center_y - height / 2.0;
-            float x_max = center_x + width / 2.0;
-            float y_max = center_y + height / 2.0;
-
-
-
-
+            float x_min = x;
+            float y_min = y;
+            float x_max = x + width;
+            float y_max = y + height;
 
             int class_id = box[4];
             float confidence = box[5];
@@ -73,10 +64,6 @@ public:
                 cv::Point(static_cast<int>(x_min) + label_size.width, static_cast<int>(y_min)), cv::Scalar(0, 255, 0), cv::FILLED);
             cv::putText(image, label, cv::Point(static_cast<int>(x_min), static_cast<int>(y_min) - 5),
                 cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1);
-
-
-            //cv::imshow("output", image);
-            //cv::waitKey(0);
         }
     }
 };
