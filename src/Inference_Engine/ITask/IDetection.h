@@ -9,7 +9,7 @@ private:
 public :
     using InputType = cv::Mat;
     using OutputType = std::vector<std::vector<float>>;	// [x, y, width, height, confidence]
-    static void preProcess(const cv::Mat& before, cv::Mat& after) {
+    static void preProcess(const InputType& before, cv::Mat& after) {
         try {
             //resizing to yolo inputsize
             cv::resize(before, after, cv::Size(640, 640));
@@ -25,7 +25,7 @@ public :
             std::cout << ex.what() << std::endl;
         }
     }
-    static void preProcess(const cv::Mat& before, at::Tensor& after) {
+    static void preProcess(const InputType& before, at::Tensor& after) {
         try {
             
             cv::Mat resized;
@@ -51,6 +51,28 @@ public :
         catch (std::exception& ex) {
             std::cout << ex.what() << std::endl;
         }
+    }
+    static void preProcess(const InputType& before, float* deviceBuffer) {
+        // Resize the image to match the model's input size.
+        cv::Mat resized;
+        cv::resize(before, resized, cv::Size(640, 640));
+
+        // Convert the image to float and normalize it (e.g., scale to [0, 1]).
+        cv::Mat normalized;
+        resized.convertTo(normalized, CV_32FC3, 1.0 / 255);
+
+        // Convert HWC (Height x Width x Channels) to CHW (Channels x Height x Width).
+        std::vector<cv::Mat> channels(3);
+        cv::split(normalized, channels);
+        float* hostData = new float[3 * 640 * 640];
+        for (int c = 0; c < 3; ++c) {
+            memcpy(hostData + c * 640 * 640, channels[c].data, 640 * 640 * sizeof(float));
+        }
+
+        // Copy the preprocessed data to the GPU.
+        cudaMemcpy(deviceBuffer, hostData, 3 * 640 * 640 * sizeof(float), cudaMemcpyHostToDevice);
+
+        delete[] hostData;
     }
 
 
@@ -196,16 +218,25 @@ public :
         }
     }
 
-    //static void processOutput(const torch::Tensor& tensor, OutputType& output) {
-    //    output.clear();
-    //    for (int i = 0; i < tensor.size(0); ++i) {
-    //        output.push_back({
-    //            tensor[i][0].item<float>(),  // x
-    //            tensor[i][1].item<float>(),  // y
-    //            tensor[i][2].item<float>(),  // width
-    //            tensor[i][3].item<float>(),  // height
-    //            tensor[i][4].item<float>()   // confidence
-    //            });
-    //    }
-    //}
+    static void postProcess(const float* deviceOutput, OutputType& output,
+        float confThreshold = 0.5, float nmsThreshold = 0.4) {
+        try {
+            // Define the size of the output tensor
+            const int outputSize = 84 * 8400; // Example size, adjust based on your model
+
+            // Wrap the device pointer in a torch::Tensor (GPU tensor)
+            auto tensor = torch::from_blob(const_cast<float*>(deviceOutput),
+                { 1, 84, 8400 }, // Adjust dimensions as per your model
+                torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA));
+
+            // Move tensor to CPU if needed (TensorRT outputs are usually on GPU)
+            auto cpuTensor = tensor.to(torch::kCPU).clone(); // Clone to avoid pointer aliasing
+
+            // Call your existing postProcess function
+            postProcess(cpuTensor, output, confThreshold, nmsThreshold);
+        }
+        catch (std::exception& ex) {
+            std::cerr << "Postprocessing Error: " << ex.what() << std::endl;
+        }
+    }
 };
