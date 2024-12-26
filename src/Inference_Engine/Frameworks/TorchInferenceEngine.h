@@ -13,10 +13,14 @@ private:
 
 public:
 	TorchInferenceEngine(const std::string& modelPath) {
-		/*if (!torch::cuda::is_available()) {
-			std::cerr << "CUDA is not available. Please check your setup." << std::endl;
-			std::exit(1);
-		}*/
+		if (!torch::cuda::is_available()) {
+			std::cerr << "CUDA is not available. Setting device to CPU." << std::endl;
+			this->device = at::kCPU;
+		}
+		else {
+			std::cerr << "CUDA is available. Using CUDA as default device." << std::endl;
+			this->device = torch::kCUDA;
+		}
 
 		loadModel(modelPath);
 	}
