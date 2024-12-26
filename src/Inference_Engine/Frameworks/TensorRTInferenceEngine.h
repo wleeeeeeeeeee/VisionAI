@@ -23,6 +23,6 @@ public:
 		//run inference
 
 		//task-specific postprocessing
-		TaskType::processOuput(rawOutput, output);
+		//TaskType::processOuput(rawOutput, output);
 	}
 };
