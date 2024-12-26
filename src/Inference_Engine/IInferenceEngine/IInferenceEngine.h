@@ -1,10 +1,17 @@
 #pragma once
 #include <iostream>
 #include <filesystem>
+
 #include <onnxruntime_cxx_api.h>
+
 #include <opencv2/opencv.hpp>
+
 #include <torch/torch.h>
 #include <torch/script.h>
+
+#include <NvInfer.h>
+#include <NvInferRuntime.h>
+#include <NvInferVersion.h>
 
 template <typename TaskType>
 class IInferenceEngine {
