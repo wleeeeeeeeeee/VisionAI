@@ -33,9 +33,6 @@ public:
 		}
 		//load model
 		model = torch::jit::load(modelPath);
-		//define device
-		//device = at::kCUDA;
-		this->device = at::kCPU;
 		//mode model to device
 		model.to(device);
 
