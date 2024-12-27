@@ -5,20 +5,15 @@ private:
 
 public:
     using InputType = std::vector<float>;	// Flattened image data
-    using OutputType = std::vector<std::vector<float>>;	// [x, y, width, height, confidence]
+    using OutputType = std::vector<std::vector<float>>;	
     static void preProcess() {
+        //condition if it need imagenet normalizing
 
+        //normalizing to [0,1] by dividing 1/255
+        //depending on input type(if opencv mat) convert input channels. bgr->rgb 
+        // cvt data type to float 
     }
-    static void processOutput(const torch::Tensor& tensor, OutputType& output) {
-        output.clear();
-        for (int i = 0; i < tensor.size(0); ++i) {
-            output.push_back({
-                tensor[i][0].item<float>(),  // x
-                tensor[i][1].item<float>(),  // y
-                tensor[i][2].item<float>(),  // width
-                tensor[i][3].item<float>(),  // height
-                tensor[i][4].item<float>()   // confidence
-                });
-        }
+    static void postProcess(const torch::Tensor& tensor, OutputType& output) {
+       
     }
 };
