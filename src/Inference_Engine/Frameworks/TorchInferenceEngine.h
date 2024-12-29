@@ -7,9 +7,9 @@ class TorchInferenceEngine : public IInferenceEngine<TaskType> {
 private:
 	torch::DeviceType device;
 	torch::jit::script::Module model;
-	std::vector<torch::jit::IValue> input;
+	std::vector<torch::jit::IValue> inputs;
 	//torch::jit::IValue input;
-	torch::jit::IValue output;
+	std::vector<torch::jit::IValue> outputs;
 
 public:
 	TorchInferenceEngine(const std::string& modelPath) {
@@ -42,11 +42,11 @@ public:
 		//prepare input tensor
 		torch::Tensor input_tensor;
 		TaskType::preProcess(input, input_tensor);
-		this->input.push_back(input_tensor);
+		this->inputs.push_back(input_tensor);
 		
 		//run inference
-		this->output = this->model.forward(this->input);
+		this->outputs.push_back(this->model.forward(this->input));
 		//task-specific postprocessing
-		TaskType::postProcess(this->output.toTensor(), output);
+		TaskType::postProcess(this->output, output);
 	}
 };

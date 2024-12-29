@@ -217,7 +217,72 @@ public :
             std::cout << "Postprocessing Error: " << ex.what() << std::endl;
         }
     }
+    static void postProcess(std::vector<torch::jit::IValue>& rawOutput, OutputType& output, float confThreshold = 0.5, float nmsThreshold = 0.4) {
+        try {
+            // Clear the output
+            output.clear();
 
+            // Convert to tensor and move to CPU and detach
+            // Shape : [1,4,8400]
+            auto tensor = rawOutput[0].toTensor().to(torch::kCPU).detach();
+
+            // Extract bounding boxes and class scores
+            auto bboxes = tensor.index({0, torch::indexing::Slice(0, 4), torch::indexing::Ellipsis}); // Shape: [4, 8400]
+            auto class_scores = tensor.index({ 0, torch::indexing::Slice(4, torch::indexing::None), torch::indexing::Ellipsis }); // Shape: [80, 8400]
+
+            // Compute maximum class scores and their indices for each box
+            auto max_scores = std::get<0>(class_scores.max(0)); // Shape: [8400]
+            auto class_indices = std::get<1>(class_scores.max(0)); // Shape: [8400]
+
+            // Apply confidence threshold
+            auto mask = (max_scores > confThreshold); // Shape: [8400]
+
+            // Filter bounding boxes and scores
+            auto filtered_bboxes = bboxes.index({ torch::indexing::Slice(), mask }); // Shape: [4, N]
+            auto filtered_scores = max_scores.index({ mask }); // Shape: [N]
+            auto filtered_classes = class_indices.index({ mask }); // Shape: [N]
+
+            // Convert filtered bounding boxes to OpenCV format
+            std::vector<cv::Rect> cv_bboxes;
+            std::vector<float> confidences;
+            std::vector<int> class_ids;
+
+            for (int i = 0; i < filtered_bboxes.size(1); ++i) {
+                auto bbox = filtered_bboxes.index({ torch::indexing::Slice(), i });
+                float x = bbox[0].item<float>();
+                float y = bbox[1].item<float>();
+                float w = bbox[2].item<float>();
+                float h = bbox[3].item<float>();
+
+                cv_bboxes.emplace_back(cv::Rect(cv::Point(x - w / 2, y - h / 2), cv::Size(w, h))); // Convert to OpenCV Rect format
+                confidences.push_back(filtered_scores[i].item<float>());
+                class_ids.push_back(filtered_classes[i].item<int>());
+            }
+
+            // Apply OpenCV NMS
+            std::vector<int> kept_indices;
+            cv::dnn::NMSBoxes(cv_bboxes, confidences, confThreshold, nmsThreshold, kept_indices);
+
+            // Filter output to keep only NMS results
+            OutputType filteredOutput;
+            for (const auto& idx : kept_indices) {
+                std::vector<float> bbox_vec = {
+                    static_cast<float>(cv_bboxes[idx].x),
+                    static_cast<float>(cv_bboxes[idx].y),
+                    static_cast<float>(cv_bboxes[idx].width),
+                    static_cast<float>(cv_bboxes[idx].height),
+                    static_cast<float>(class_ids[idx]),
+                    confidences[idx]
+                };
+                filteredOutput.push_back(bbox_vec);
+            }
+
+            output = std::move(filteredOutput);
+        }
+        catch (std::exception& ex) {
+            std::cout << "Postprocessing Error: " << ex.what() << std::endl;
+        }
+    }
     static void postProcess(const float* deviceOutput, OutputType& output,
         float confThreshold = 0.5, float nmsThreshold = 0.4) {
         try {
