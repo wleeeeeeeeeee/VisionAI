@@ -1,19 +1,44 @@
 #include "ITask.h"
 
 class ISegmentation : public ITask {
-private:
-
+protected:
+    int cls_idx = 0;    //background class is chosen for default
 public:
-    using InputType = std::vector<float>;	// Flattened image data
+    using InputType = cv::Mat;	// opencv Image
     using OutputType = std::vector<std::vector<float>>;	
-    static void preProcess() {
-        //condition if it need imagenet normalizing
+    static void preProcess(const InputType& before, at::Tensor& after) {
+        try {
 
-        //normalizing to [0,1] by dividing 1/255
-        //depending on input type(if opencv mat) convert input channels. bgr->rgb 
-        // cvt data type to float 
+            cv::Mat resized;
+            //resizing to yolo inputsize
+            cv::resize(before, resized, cv::Size(640, 640));
+
+            //normalizing pixel values
+            resized.convertTo(resized, CV_32FC3, 1.0 / 255.0);
+
+            //converting bgr to rgb
+            cv::cvtColor(resized, resized, cv::COLOR_BGR2RGB);
+
+            //convert to tensor
+            auto tensor = torch::from_blob(resized.data, { 1,resized.rows, resized.cols, 3 }, torch::kFloat32);
+
+            //permute to match NCHW format
+            tensor = tensor.permute({ 0,3,1,2 });
+
+            //save processed tensor for inference
+            after = tensor.clone();
+
+        }
+        catch (std::exception& ex) {
+            std::cout << ex.what() << std::endl;
+        }
     }
-    static void postProcess(const torch::Tensor& tensor, OutputType& output) {
-       
+    static void postProcess(std::vector<torch::jit::IValue>& rawOuputs, OutputType& output) {
+        try {
+
+       }
+        catch (std::exception& ex) {
+            std::cout << "Error Occured During Segmentation PostProcess" << std::endl;
+        }
     }
 };
