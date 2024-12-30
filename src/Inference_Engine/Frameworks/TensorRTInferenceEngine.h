@@ -75,5 +75,6 @@ public:
 		catch (std::exception& ex) {
 			std::cerr << ex.what() << std::endl;
 		}
+
 	}
 };

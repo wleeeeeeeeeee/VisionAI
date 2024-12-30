@@ -143,13 +143,14 @@ public:
 
 	void infer(const typename TaskType::InputType& input, typename TaskType::OutputType& output) override {
 		try {
-			//prepare input tensor
+			//prepare normalized data
 			cv::Mat input_tensor;
 			TaskType::preProcess(input, input_tensor);
 
 			//converting to ort::value 
 			cv::Mat blob = cv::dnn::blobFromImage(input_tensor);
 
+			//create onnx tensor
 			auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 			Ort::Value ort_input_tensor = Ort::Value::CreateTensor<float>(memory_info, blob.ptr<float>(), blob.total(), input_dims[0].data(), input_dims[0].size());
 			
@@ -171,7 +172,6 @@ public:
 			at::Tensor output_tensor;
 			dataTransformer::vec2tensor(output_vec, output_dims[0], output_tensor);
 
-			// Assuming 'tensor' is your tensor object
 			std::vector<int64_t> tensor_shape = output_tensor.sizes().vec();
 
 			// Print the shape
