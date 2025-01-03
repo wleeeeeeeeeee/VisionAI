@@ -80,8 +80,8 @@ protected:
         mask = mask(temp_rect - cv::Point(left, top)) > mask_threshold;
         output.mask = mask;
 
-        cv::imshow("mask", output.mask);
-        cv::waitKey(0);
+        //cv::imshow("mask", output.mask);
+        //cv::waitKey(0);
     }
 
     static void draw_result(cv::Mat& img, std::vector<OutputSeg> output_seg, cv::Mat& result_img)
@@ -90,7 +90,7 @@ protected:
         result_img = img.clone();
         srand(time(0));
 
-        for (int i = 0; i < output_seg.size(); i++)
+        for (int i = 0; i < 20; i++)
         {
             cv::rectangle(result_img, output_seg[i].box, cv::Scalar(255, 0, 0), 1);
             mask(output_seg[i].box).setTo(cv::Scalar(rand() % 256, rand() % 256, rand() % 256), output_seg[i].mask);
@@ -143,6 +143,29 @@ public:
             std::cout << ex.what() << std::endl;
         }
     }
+    //static void preProcess(const InputType& before, at::Tensor& after) {
+    //    try {
+
+    //        //LetterBox
+    //        cv::Mat letterbox;
+    //        cv::Mat temp = before.clone();
+    //        cv::Vec4d m_params;
+    //        LetterBox(temp, letterbox, m_params, cv::Size(640, 640));
+
+    //        cv::cvtColor(letterbox, letterbox, cv::COLOR_BGR2RGB);
+
+    //        torch::Tensor input;
+    //        letterbox.convertTo(letterbox, CV_32FC3, 1.0f / 255.0f);
+    //        input = torch::from_blob(letterbox.data, { 1, letterbox.rows, letterbox.cols, letterbox.channels() }, torch::kFloat).to(torch::kCUDA);
+    //        input = input.permute({ 0, 3, 1, 2 }).contiguous();
+    //        after = input.clone();
+    //    }
+    //    catch (std::exception& ex) {
+    //        std::cout << ex.what() << std::endl;
+    //    }
+    //}
+
+    
 
     static void postProcess(std::vector<torch::jit::IValue>& rawOuputs, OutputType& outputvec) {
         try {
