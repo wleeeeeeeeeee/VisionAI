@@ -4,6 +4,13 @@
 
 class IDetection : public ITask {
 private:
+protected:
+    //normalization
+    //resizing
+    //confidence filtering
+    //bounding box decoding
+    // non-maximum suppression
+    // class mapping
 	
 
 public :
@@ -74,80 +81,6 @@ public :
 
         delete[] hostData;
     }
-
-
-    /**
-    *@todo postProcess function that uses custom nms(iou comparing) -> not working correctly.
-    * 
-    */
-    /*
-    static void postProcess(const torch::Tensor& tensor, OutputType& output, float confThreshold = 0.5, float nmsThreshold = 0.4) {
-        try {
-            //yolo11 -> tensor with shape [1,84,8400]
-
-            output.clear();
-
-            // Tensor to CPU and detach
-            auto rawOutput = tensor.to(torch::kCPU).detach();
-
-            // Access dimensions (assumes YOLO's output format)
-            auto numBoxes = rawOutput.size(2);
-
-            // Extract bounding boxes and class scores
-            auto bboxes = tensor.index({ 0, torch::indexing::Slice(0, 4), torch::indexing::Ellipsis }); // Shape: [4, 8400]
-            auto class_scores = tensor.index({0, torch::indexing::Slice(4, torch::indexing::None), torch::indexing::Ellipsis }); // Shape: [80, 8400]
-
-            // Compute maximum class score and class indices for each box
-            auto max_scores = std::get<0>(class_scores.max(0)); // Shape: [8400]
-            std::cout << max_scores.size(0) << std::endl;
-            auto class_indices = std::get<1>(class_scores.max(0)); // Shape: [8400]
-            std::cout << class_indices.size(0) << std::endl;
-
-            // Apply confidence threshold
-            auto mask = (max_scores > confThreshold); // Shape: [8400]
-            std::cout << mask.size(0) << std::endl;
-
-            // Filter bounding boxes
-            auto filtered_bboxes = bboxes.index({ torch::indexing::Slice(), mask }); // Shape: [4, N]
-            auto filtered_scores = max_scores.index({ mask }); // Shape: [N]
-            auto filtered_classes = class_indices.index({ mask }); // Shape: [N]
-
-            // Transpose filtered_bboxes for NMS
-            auto bboxes_for_nms = filtered_bboxes.t(); // Shape: [N, 4]
-            
-            // Apply NMS to reduce redundant boxes
-            auto kept_indices = visionOps::nms(bboxes_for_nms, filtered_scores, nmsThreshold);
-
-
-            // Filter output to keep only NMS results
-            OutputType filteredOutput;
-
-            for (int i = 0; i < kept_indices.size(0); ++i) {
-                int64_t idx = kept_indices[i].item<int64_t>(); // Get index for each kept box
-
-                // Extract the bounding box coordinates (x, y, w, h)
-                auto bbox = bboxes_for_nms[idx];
-                std::vector<float> bbox_vec = { bbox[0].item<float>(), bbox[1].item<float>(), bbox[2].item<float>(), bbox[3].item<float>() };
-
-                // Assuming predicted_classes is a tensor with class IDs
-                float class_id = filtered_classes[idx].item<float>(); // Get the class ID
-                float confidence = filtered_scores[idx].item<float>(); // Get the confidence score
-
-                bbox_vec.push_back(class_id);
-                bbox_vec.push_back(confidence);
-
-                filteredOutput.push_back(bbox_vec); // Add filtered bounding box to the output
-            }
-
-
-            output = std::move(filteredOutput);
-        }
-        catch (std::exception& ex) {
-            std::cout << "Postprocessing Error: " << ex.what() << std::endl;
-        }
-    }
-    */
-
     static void postProcess(const torch::Tensor& tensor, OutputType& output, float confThreshold = 0.5, float nmsThreshold = 0.4) {
         try {
             // Clear the output
