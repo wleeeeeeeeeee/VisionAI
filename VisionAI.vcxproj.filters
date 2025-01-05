@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Inference_Engine\ITask\IDetection.h">
+    <ClInclude Include="src\TaskTypes\IDetection.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\IInferenceEngine\IInferenceEngine.h">
+    <ClInclude Include="src\InferenceEngineBase.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Frameworks\OnnxInferenceEngine.h">
+    <ClInclude Include="src\EngineTypes\OnnxInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Frameworks\TorchInferenceEngine.h">
+    <ClInclude Include="src\EngineTypes\TorchInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\Frameworks\TensorRTInferenceEngine.h">
+    <ClInclude Include="src\EngineTypes\TensorRTInferenceEngine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\Log\log.h">
@@ -36,13 +36,13 @@
     <ClInclude Include="VisionAPI.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\ITask\ISegmentation.h">
+    <ClInclude Include="src\TaskTypes\ISegmentation.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\ITask\IClassification.h">
+    <ClInclude Include="src\TaskTypes\IClassification.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\Inference_Engine\ITask\ITask.h">
+    <ClInclude Include="src\ITask.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\Utils\dataTransformation.h">
@@ -62,19 +62,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Inference_Engine\ITask\IDetection.cpp">
+    <ClCompile Include="include\TaskTypes\IDetection.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\IInferenceEngine\IInferenceEngine.cpp">
+    <ClCompile Include="include\InferenceEngineBase.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Frameworks\OnnxInferenceEngine.cpp">
+    <ClCompile Include="include\EngineTypes\OnnxInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Frameworks\TorchInferenceEngine.cpp">
+    <ClCompile Include="include\EngineTypes\TorchInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\Frameworks\TensorRTInferenceEngine.cpp">
+    <ClCompile Include="include\EngineTypes\TensorRTInferenceEngine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\Log\log.cpp">
@@ -83,13 +83,13 @@
     <ClCompile Include="VisionAPI.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\ITask\ISegmentation.cpp">
+    <ClCompile Include="include\TaskTypes\ISegmentation.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\ITask\IClassification.cpp">
+    <ClCompile Include="include\TaskTypes\IClassification.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inference_Engine\ITask\ITask.cpp">
+    <ClCompile Include="include\ITask.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\Utils\fileTransformation.cpp">
@@ -103,6 +103,7 @@
     <None Include="packages.config" />
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime_providers_shared.dll" />
+    <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
     <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\onnxruntime.dll" />
